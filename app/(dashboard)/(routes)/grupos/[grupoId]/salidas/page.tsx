@@ -30,6 +30,7 @@ const SalidasPage = async ({
     descripcion: item.descripcion,
     lugar: item.lugar,
     grupoId: item?.grupoId,
+    misioneroId: item?.misioneroId,
     fecha: format(new Date(item.fecha), 'MM/dd/yyyy HH:mm'),
     createdAt: format(item.createdAt, 'MMMM do, yyyy'),
     updatedAt: format(new Date(item.updatedAt), 'MMMM do, yyyy'),

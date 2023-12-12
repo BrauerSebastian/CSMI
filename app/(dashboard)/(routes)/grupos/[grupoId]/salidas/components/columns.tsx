@@ -10,6 +10,7 @@ export type SalidaColumn = {
   lugar: string;
   fecha: string;
   grupoId: string;
+  misioneroId: string;
   createdAt: string;
   updatedAt: string;
 };

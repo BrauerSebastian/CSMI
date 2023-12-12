@@ -11,8 +11,28 @@ export async function PATCH(
 
     const { name, lugar, fecha, descripcion, misioneroId } = body;
 
-    if (!name || !descripcion || !lugar || !fecha || !params.salidaId) {
-      return new NextResponse('Todos los campos son obligatorios', {
+    if (!name) {
+      return new NextResponse('El Nombre de la salida es necesario', {
+        status: 400,
+      });
+    }
+    if (!lugar) {
+      return new NextResponse('El lugar de la salida es necesario', {
+        status: 400,
+      });
+    }
+    if (!fecha) {
+      return new NextResponse('La fecha de la salida es necesaria', {
+        status: 400,
+      });
+    }
+    if (!descripcion) {
+      return new NextResponse('La descripción de la salida es necesaria', {
+        status: 400,
+      });
+    }
+    if (!misioneroId) {
+      return new NextResponse('misioneroId es necesario', {
         status: 400,
       });
     }
