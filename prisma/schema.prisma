@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+  userRole ROLE   @default(USER)
+
+  grupoId String?
+  grupo   Grupo?  @relation("UserToGrupo", fields: [grupoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([grupoId])
+}
+
+model Grupo {
+  id   String @id @default(uuid())
+  name String @unique
+
+  misioneros Misionero[] @relation("MisioneroToGrupo")
+
+  usuarios User[]  @relation("UserToGrupo")
+  userId   String?
+
+  informes  Informe[] @relation("InformeToGrupo")
+  informeId String?
+
+  salidas Salida[] @relation("SalidaToGrupo")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Misionero {
+  id              String @id @default(uuid())
+  name            String
+  apellido        String
+  email           String
+  numeroAlumno    String
+  edad            String
+  tipoDocumento   String
+  numeroDocumento String
+  carrera         String
+  numeroTelefono  String
+
+  grupos Grupo[] @relation("MisioneroToGrupo")
+
+  salidaId String?
+  salida   Salida? @relation("MisionerosToSalida", fields: [salidaId], references: [id]) // Un misionero pertenece a una salida
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([salidaId])
+}
+
+model Informe {
+  id          String   @id @default(uuid())
+  name        String
+  descripcion String
+  fecha       DateTime
+
+  grupoId String?
+  grupo   Grupo?  @relation("InformeToGrupo", fields: [grupoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([grupoId])
+}
+
+model Salida {
+  id          String   @id @default(uuid())
+  name        String
+  lugar       String
+  descripcion String
+  fecha       DateTime
+
+  grupoId String?
+  grupo   Grupo?  @relation("SalidaToGrupo", fields: [grupoId], references: [id])
+
+  misioneros Misionero[] @relation("MisionerosToSalida")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([grupoId])
+}
+
+enum ROLE {
+  ADMIN
+  USER
+}
