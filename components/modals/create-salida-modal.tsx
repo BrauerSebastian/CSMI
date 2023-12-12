@@ -32,7 +32,7 @@ const formSchema = z.object({
   descripcion: z.string().min(2),
   lugar: z.string().min(2),
   fecha: z.date(),
-  grupoId: z.string(),
+  grupoId: z.union([z.string(), z.array(z.string())]),
 });
 
 export const CreateSalidaModal = () => {
