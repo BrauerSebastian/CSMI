@@ -43,7 +43,7 @@ const formSchema = z.object({
   grupoId: z.union([z.string(), z.array(z.string())]).optional(), // Hacer que grupoId sea opcional
 });
 
-export const CreateSalidaModal = () => {
+export const CrearInformeModal = () => {
   const { grupoId } = useParams();
   const { isOpen, onClose, type } = useModal();
   const router = useRouter();
