@@ -1,7 +1,8 @@
 import prismadb from '@/lib/prismadb';
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { compare } from 'bcrypt'; // Importamos la función de comparación de bcrypt
+export const runtime = 'nodejs';
+const { hash, verify } = require('credentials');
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -20,6 +21,7 @@ export const authOptions: NextAuthOptions = {
           type: 'password',
         },
       },
+
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
           return null;
@@ -30,13 +32,13 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
           },
         });
-
         if (!user) return null;
 
-        // Utilizamos bcrypt para comparar las contraseñas de manera segura
-        const isValidPassword = await compare(credentials.password, user.password);
+        const passwordHashed = hash(credentials.password);
 
-        if (!isValidPassword) return null;
+        const isValid = verify(passwordHashed, user.password);
+
+        if (!isValid) return null;
 
         return {
           id: user.id,
@@ -48,36 +50,47 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+
   callbacks: {
-    jwt: ({ token, user }) => {
-      if (user) {
-        return {
-          ...token,
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          groupId: user.groupId,
-        };
+    jwt: async ({ token, user }) => {
+      try {
+        if (user) {
+          return {
+            ...token,
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            groupId: user.groupId,
+          };
+        }
+        return token;
+      } catch (error) {
+        console.error('Error en callback jwt:', error);
+        throw error;
       }
-      return token;
     },
+
     session: ({ session, token }) => {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          role: token.role,
-          groupId: token.grupoId,
-        },
-      };
+      try {
+        return {
+          ...session,
+          user: {
+            ...session.user,
+            id: token.id,
+            name: token.name,
+            email: token.email,
+            role: token.role,
+            groupId: token.grupoId,
+          },
+        };
+      } catch (error) {
+        console.error('Error en callback session:', error);
+        throw error;
+      }
     },
-  },
+  }
 };
+  const handler = NextAuth(authOptions);
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+  export { handler as GET, handler as POST };
