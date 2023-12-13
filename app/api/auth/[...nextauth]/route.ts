@@ -1,9 +1,8 @@
 import prismadb from '@/lib/prismadb';
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { hash as generateHash, verify as verifyHash } from 'credentials';
-
 export const runtime = 'nodejs';
+const { hash, verify } = require('credentials');
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -27,7 +26,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) {
           return null;
         }
-      
+
         const user = await prismadb.user.findUnique({
           where: {
             email: credentials.email,
@@ -35,14 +34,12 @@ export const authOptions: NextAuthOptions = {
         });
         if (!user) return null;
 
-        // Generar un hash de la contraseña ingresada
-        const hashedPassword = generateHash(credentials.password);
+        const passwordHashed = hash(credentials.password);
 
-        // Verificar si el hash generado coincide con el hash almacenado
-        const isValid = verifyHash(hashedPassword, user.password);
+        const isValid = verify(passwordHashed, user.password);
 
         if (!isValid) return null;
-      
+
         return {
           id: user.id,
           name: user.name,
@@ -53,48 +50,36 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-
-
   callbacks: {
-    jwt: async ({ token, user }) => {
-      try {
-        if (user) {
-          return {
-            ...token,
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            groupId: user.groupId,
-          };
-        }
-        return token;
-      } catch (error) {
-        console.error('Error en callback jwt:', error);
-        throw error;
-      }
-    },
-
-    session: ({ session, token }) => {
-      try {
+    jwt: ({ token, user }) => {
+      if (user) {
         return {
-          ...session,
-          user: {
-            ...session.user,
-            id: token.id,
-            name: token.name,
-            email: token.email,
-            role: token.role,
-            groupId: token.grupoId,
-          },
+          ...token,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          groupId: user.groupId,
         };
-      } catch (error) {
-        console.error('Error en callback session:', error);
-        throw error;
       }
+      return token;
     },
-  }
+    session: ({ session, token }) => {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.id,
+          name: token.name,
+          email: token.email,
+          role: token.role,
+          groupId: token.grupoId,
+        },
+      };
+    },
+  },
 };
-  const handler = NextAuth(authOptions);
 
-  export { handler as GET, handler as POST };
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
