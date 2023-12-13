@@ -37,7 +37,6 @@ type FormValues = {
   fecha: Date;
   grupoId: string | string[];
 };
-
 const formSchema = z.object({
   name: z.string().min(2),
   descripcion: z.string().min(2),
