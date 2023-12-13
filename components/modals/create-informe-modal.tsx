@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -24,10 +22,17 @@ import { useModal } from '@/hooks/use-modal-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as z from 'zod';
 
+interface FormData {
+  name: string;
+  descripcion: string;
+  fecha: Date;
+  grupoId?: string | string[]; // Hacer que grupoId pueda ser un string o un array de strings opcional
+}
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -35,7 +40,7 @@ const formSchema = z.object({
   fecha: z.date({
     required_error: 'La fecha es requerida',
   }),
-  grupoId: z.union([z.string(), z.array(z.string())]),
+  grupoId: z.union([z.string(), z.array(z.string())]).optional(), // Hacer que grupoId sea opcional
 });
 
 export const CreateSalidaModal = () => {
@@ -45,25 +50,46 @@ export const CreateSalidaModal = () => {
 
   const isModalOpen = isOpen && type === 'crearInforme';
 
-
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       descripcion: '',
       fecha: null,
-      grupoId: grupoId,
+      grupoId: grupoId || '', // Asigna un valor por defecto al grupoId si es null
     },
   });
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  useEffect(() => {
+    if (Array.isArray(form.getValues().grupoId)) {
+      form.setValue('grupoId', form.getValues().grupoId[0] || '');
+    }
+  }, [grupoId]);
+
+  // ... Resto del código sigue igual
+
+
+  const onSubmit: SubmitHandler<{
+    name: string;
+    descripcion: string;
+    fecha: Date;
+    grupoId?: string; // Hacer que grupoId sea opcional
+  }> = async (values) => {
     try {
-      await axios.post(`/api/informes`, values);
+      const { name, descripcion, fecha, grupoId } = values;
+
+      const dataToSend = {
+        name,
+        descripcion,
+        fecha,
+        grupoId: Array.isArray(grupoId) ? grupoId[0] : grupoId, // Asegurar que sea un string
+      };
+
+      await axios.post(`/api/informes`, dataToSend);
 
       form.reset();
-
       router.refresh();
       toast.success('Informe creada correctamente');
       onClose();
@@ -73,11 +99,11 @@ export const CreateSalidaModal = () => {
     }
   };
 
+
   const handleClose = () => {
     form.reset();
     onClose();
   };
-
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
@@ -91,10 +117,7 @@ export const CreateSalidaModal = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8 w-full py-8 px-6"
-          >
+          <div className="space-y-8 w-full py-8 px-6">
             <div className="flex justify-between">
               <div className="flex-1 flex-col pr-3">
                 <FormField
@@ -122,7 +145,7 @@ export const CreateSalidaModal = () => {
                     <FormItem>
                       <FormLabel>Descripcion</FormLabel>
                       <FormControl>
-                      <Textarea
+                        <Textarea
                           disabled={isLoading}
                           placeholder="Como ha ido"
                           {...field}
@@ -132,8 +155,9 @@ export const CreateSalidaModal = () => {
                     </FormItem>
                   )}
                 />
+                {/* Agregar otros FormField necesarios aquí */}
               </div>
-
+  
               <FormField
                 control={form.control}
                 name="fecha"
@@ -157,15 +181,19 @@ export const CreateSalidaModal = () => {
                 )}
               />
             </div>
-
+  
             <DialogFooter className="px-6 py-4">
-              <Button disabled={isLoading} className="ml-auto" type="submit">
+              <Button
+                disabled={isLoading}
+                className="ml-auto"
+                type="submit"
+                onClick={form.handleSubmit(onSubmit)}
+              >
                 Crear
               </Button>
             </DialogFooter>
-          </form>
+          </div>
         </Form>
       </DialogContent>
     </Dialog>
-  );
-};
+  )};  
