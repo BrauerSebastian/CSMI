@@ -1,27 +1,29 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
+import { hash } from 'bcrypt'; // Asumiendo que estás utilizando bcrypt para hashear contraseñas
 
-const prisma = new PrismaClient()
-
-const  { hash } = require('credentials')
+const prisma = new PrismaClient();
 
 async function main() {
-    const password = await hash('test', 12)
+  try {
+    const password = await hash('test', 12); // Hashea la contraseña 'test' con un nivel de salado de 12
 
     const user = await prisma.user.upsert({
-        where: { email: 'test@test.com"'},
-        update: {},
-        create: {
-            email: 'eze@test.com', 
-            name: 'Ezequiel',
-            password,
-            userRole: 'ADMIN'
-        }
-    })
-    console.log({user})
+      where: { email: 'test@test.com' }, // Corregido: quitando la comilla extra al final del correo electrónico
+      update: {},
+      create: {
+        email: 'eze@test.com',
+        name: 'Ezequiel',
+        password,
+        userRole: 'ADMIN',
+      },
+    });
+    console.log({ user });
+  } catch (error) {
+    console.error('Error:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-main().then(() => prisma.$disconnect).catch(async (e) => {
-    console.log('error', e)
-    await prisma.$disconnect()
-    process.exit(1)
-})
+main();

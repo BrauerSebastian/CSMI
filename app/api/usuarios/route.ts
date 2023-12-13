@@ -1,48 +1,42 @@
 import { NextResponse } from 'next/server';
-
 import prismadb from '@/lib/prismadb';
+import { hash } from 'bcrypt';
 
-const { hash } = require('credentials');
-
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const body = await req.json();
-
     const { name, email, password, grupoId } = body;
 
-    if (!name) {
-      return new NextResponse('Nombre del usuario es necesario', {
-        status: 400,
-      });
-    }
-    if (!email) {
-      return new NextResponse('El email del usuario es necesario', {
-        status: 400,
-      });
-    }
-    if (!password) {
-      return new NextResponse('La contraseña es necesaria', { status: 400 });
+    if (!name || !email || !password || !grupoId) {
+      return new NextResponse('Falta información del usuario', { status: 400 });
     }
 
-    if (!grupoId) {
-      return new NextResponse('El grupo del usuario es necesario', {
-        status: 400,
-      });
-    }
-
-    const exists = await prismadb.user.findUnique({
+    const existingUser = await prismadb.user.findUnique({
       where: {
         email: email,
       },
     });
 
-    if (exists) {
+    if (existingUser) {
       return new NextResponse('El usuario ya existe', { status: 400 });
     }
 
+    // Verificar si ya existe un usuario con ese email
+    const existingEmail = await prismadb.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (existingEmail) {
+      return new NextResponse('El email ya está en uso', { status: 400 });
+    }
+
+    // Hashear la contraseña
     const hashpassword = await hash(password);
 
-    const users = await prismadb.user.create({
+    // Crear el usuario
+    const newUser = await prismadb.user.create({
       data: {
         name,
         email,
@@ -51,9 +45,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json(users);
+    return new NextResponse(JSON.stringify(newUser), { status: 200 });
   } catch (error) {
-    console.log('[USUARIOS_POST]', error);
-    return new NextResponse('Internal error', { status: 500 });
+    console.error('[USUARIOS_POST]', error);
+    return new NextResponse('Error interno', { status: 500 });
   }
 }

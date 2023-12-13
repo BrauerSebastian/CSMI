@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
-const { hash } = require('credentials');
-
 import prismadb from '@/lib/prismadb';
+import { hash } from 'bcrypt'; // Asumiendo que estás utilizando bcrypt para hashear contraseñas
 
 export async function GET(
   req: Request,
   { params }: { params: { usuarioId: string } }
 ) {
   try {
-    if (!params.usuarioId) {
+    if (!params?.usuarioId) {
       return new NextResponse('Id del usuario es necesario', { status: 400 });
     }
 
@@ -20,7 +19,7 @@ export async function GET(
 
     return NextResponse.json(users);
   } catch (error) {
-    console.log('[USUARIOS_GET]', error);
+    console.error('[USUARIOS_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
 }
@@ -34,29 +33,11 @@ export async function PATCH(
 
     const { name, email, password, grupoId } = body;
 
-    if (!name) {
-      return new NextResponse('Nombre del usuario es necesario', {
-        status: 400,
-      });
-    }
-    if (!email) {
-      return new NextResponse('El email del usuario es necesario', {
-        status: 400,
-      });
-    }
-    if (!password) {
-      return new NextResponse('La contraseña es necesaria', { status: 400 });
+    if (!name || !email || !password || !grupoId || !params?.usuarioId) {
+      return new NextResponse('Faltan datos necesarios', { status: 400 });
     }
 
-    if (!grupoId) {
-      return new NextResponse('Grupo id es necesario', { status: 400 });
-    }
-
-    if (!params.usuarioId) {
-      return new NextResponse('User Id is required', { status: 400 });
-    }
-
-    const hashpassword = await hash(password);
+    const hashpassword = await hash(password, 10); // Se asume el nivel de salado como 10, ajusta según necesites
 
     const user = await prismadb.user.updateMany({
       where: {
@@ -72,7 +53,7 @@ export async function PATCH(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.log('[USER_PATCH]', error);
+    console.error('[USER_PATCH]', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
@@ -82,7 +63,7 @@ export async function DELETE(
   { params }: { params: { usuarioId: string } }
 ) {
   try {
-    if (!params.usuarioId) {
+    if (!params?.usuarioId) {
       return new NextResponse('Id del usuario es necesario', { status: 400 });
     }
 
@@ -94,7 +75,7 @@ export async function DELETE(
 
     return NextResponse.json(user);
   } catch (error) {
-    console.log('USER_DELETE', error);
+    console.error('USER_DELETE', error);
     return new NextResponse('Internal error', { status: 500 });
   }
 }
