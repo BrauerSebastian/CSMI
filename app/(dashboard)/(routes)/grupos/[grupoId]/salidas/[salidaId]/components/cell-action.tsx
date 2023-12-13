@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Edit, MoreHorizontal, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { AlertModal } from '@/components/modals/alert-modal';
@@ -28,7 +28,10 @@ export const CellAction: React.FC<CellActionProps> = ({ misionero }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const [asistenciaTomada, setAsistenciaTomada] = useState(false);
+  const [asistenciaTomada, setAsistenciaTomada] = useState(() => {
+    const savedAsistencia = localStorage.getItem('asistenciaTomada');
+    return savedAsistencia ? JSON.parse(savedAsistencia) : false;
+  });
 
   const onDelete = async () => {
     try {
@@ -44,9 +47,18 @@ export const CellAction: React.FC<CellActionProps> = ({ misionero }) => {
     }
   };
 
-  const handleAsistenciaChange = () => {
-    setAsistenciaTomada(!asistenciaTomada);
+  const handleAsistenciaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked;
+    setAsistenciaTomada(isChecked);
+    localStorage.setItem('asistenciaTomada', JSON.stringify(isChecked));
   };
+
+  useEffect(() => {
+    const savedAsistencia = localStorage.getItem('asistenciaTomada');
+    if (savedAsistencia !== null) {
+      setAsistenciaTomada(JSON.parse(savedAsistencia));
+    }
+  }, []);
 
   return (
     <>
@@ -60,7 +72,7 @@ export const CellAction: React.FC<CellActionProps> = ({ misionero }) => {
         <Checkbox
           checked={asistenciaTomada}
           onChange={handleAsistenciaChange}
-          placeholder="Tomar asistencia"
+          label="Tomar asistencia"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

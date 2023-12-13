@@ -41,7 +41,7 @@
   export const CrearInformeModal = () => {
     const { grupoId } = useParams();
     const router = useRouter();
-
+    const normalizedGrupoId = Array.isArray(grupoId) ? grupoId[0] : grupoId;
     const { isOpen, onClose, type } = useModal();
 
     const isModalOpen = isOpen && type === 'crearInforme';
@@ -52,7 +52,7 @@
         name: '',
         descripcion: '',
         fecha: null,
-        grupoId: grupoId,
+        grupoId: normalizedGrupoId || '',
       },
     });
 
