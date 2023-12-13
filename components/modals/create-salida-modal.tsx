@@ -23,9 +23,17 @@ import { useModal } from '@/hooks/use-modal-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as z from 'zod';
+
+type FormValues = {
+  name: string;
+  descripcion: string;
+  lugar: string;
+  fecha: Date;
+  grupoId: string | string[];
+};
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -55,12 +63,16 @@ export const CreateSalidaModal = () => {
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    const { grupoId, ...rest } = values;
+    const formattedGrupoId = Array.isArray(grupoId) ? grupoId[0] : grupoId;
+    const formattedValues = { ...rest, grupoId: formattedGrupoId };
+  
     try {
-      await axios.post(`/api/salidas`, values);
-
+      await axios.post(`/api/salidas`, formattedValues);
+  
       form.reset();
-
+  
       router.refresh();
       toast.success('Salida creada correctamente');
       onClose();

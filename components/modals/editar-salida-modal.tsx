@@ -22,9 +22,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as z from 'zod';
+
+type FormValues = {
+  name: string;
+  descripcion: string;
+  lugar: string;
+  fecha: Date;
+  grupoId: string;
+};
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -68,12 +76,14 @@ export const EditarSalidaModal = () => {
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    const { grupoId, ...rest } = values;
+  
     try {
-      await axios.patch(`/api/salidas/${salida?.id}`, values);
-
+      await axios.patch(`/api/salidas/${salida?.id}`, rest);
+  
       form.reset();
-
+  
       router.refresh();
       toast.success('Salida actualizada correctamente.');
       onClose();
