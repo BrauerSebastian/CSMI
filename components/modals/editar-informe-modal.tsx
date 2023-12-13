@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import * as z from 'zod';
 
@@ -29,6 +29,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useModal } from '@/hooks/use-modal-store';
 import { useEffect } from 'react';
+
+
+type FormValues = {
+  name: string;
+  descripcion: string;
+  fecha: Date;
+  grupoId: string | string[];
+};
 
 const formSchema = z.object({
   name: z.string().min(2),
@@ -68,12 +76,16 @@ export const EditarInformeModal = () => {
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+    const { grupoId, ...rest } = values;
+    const formattedGrupoId = Array.isArray(grupoId) ? grupoId[0] : grupoId;
+    const formattedValues = { ...rest, grupoId: formattedGrupoId };
+  
     try {
-      await axios.patch(`/api/informes/${informe?.id}`, values);
-
+      await axios.patch(`/api/informes/${informe?.id}`, formattedValues);
+  
       form.reset();
-
+  
       router.refresh();
       toast.success('Informe actualizado correctamente.');
       onClose();
@@ -82,6 +94,7 @@ export const EditarInformeModal = () => {
       console.log(error);
     }
   };
+  
 
   const handleClose = () => {
     form.reset();
@@ -98,7 +111,7 @@ export const EditarInformeModal = () => {
           <DialogDescription className="text-center text-zinc-500">
             Cuenta como ha ido la actividad misionera
           </DialogDescription>
-        </DialogHeader>
+        </DialogHeader> 
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}

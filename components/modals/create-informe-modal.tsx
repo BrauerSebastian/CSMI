@@ -105,95 +105,95 @@ export const CrearInformeModal = () => {
     onClose();
   };
 
-  return (
-    <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white text-black p-0 overflow-hidden max-w-3xl">
-        <DialogHeader className="pt-8 px-6">
-          <DialogTitle className="text-2xl text-center font-bold">
-            Crea un nuevo informe
-          </DialogTitle>
-          <DialogDescription className="text-center text-zinc-500">
-            Cuenta como ha ido la actividad misionera
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <div className="space-y-8 w-full py-8 px-6">
-            <div className="flex justify-between">
-              <div className="flex-1 flex-col pr-3">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Título</FormLabel>
-                      <FormControl>
-                        <Input
-                          className="max-w-xs"
-                          disabled={isLoading}
-                          placeholder="titulo"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="descripcion"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripcion</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          disabled={isLoading}
-                          placeholder="Como ha ido"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {/* Agregar otros FormField necesarios aquí */}
-              </div>
-  
+return (
+  <Dialog open={isModalOpen} onOpenChange={handleClose}>
+    <DialogContent className="bg-white text-black p-0 overflow-hidden max-w-3xl">
+      <DialogHeader className="pt-8 px-6">
+        <DialogTitle className="text-2xl text-center font-bold">
+          Crea un nuevo informe
+        </DialogTitle>
+        <DialogDescription className="text-center text-zinc-500">
+          Cuenta como ha ido la actividad misionera
+        </DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <div className="space-y-8 w-full py-8 px-6">
+          <div className="flex justify-between">
+            <div className="flex-1 flex-col pr-3">
               <FormField
                 control={form.control}
-                name="fecha"
+                name="name"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Fecha del informe</FormLabel>
+                  <FormItem>
+                    <FormLabel>Título</FormLabel>
                     <FormControl>
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        className="rounded-md border"
-                        disabled={(date) =>
-                          date > new Date() || date < new Date('1900-01-01')
-                        }
-                        initialFocus
+                      <Input
+                        className="max-w-xs"
+                        disabled={isLoading}
+                        placeholder="titulo"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="descripcion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descripcion</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        disabled={isLoading}
+                        placeholder="Como ha ido"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* Agregar otros FormField necesarios aquí */}
             </div>
-  
-            <DialogFooter className="px-6 py-4">
-              <Button
-                disabled={isLoading}
-                className="ml-auto"
-                type="submit"
-                onClick={form.handleSubmit(onSubmit)}
-              >
-                Crear
-              </Button>
-            </DialogFooter>
+
+            <FormField
+              control={form.control}
+              name="fecha"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Fecha del informe</FormLabel>
+                  <FormControl>
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      className="rounded-md border"
+                      disabled={(date) =>
+                        date > new Date() || date < new Date('1900-01-01')
+                      }
+                      initialFocus
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  )};  
+
+          <DialogFooter className="px-6 py-4">
+            <Button
+              disabled={isLoading}
+              className="ml-auto"
+              type="submit"
+              onClick={form.handleSubmit(onSubmit)}
+            >
+              Crear
+            </Button>
+          </DialogFooter>
+        </div>
+      </Form>
+    </DialogContent>
+  </Dialog>
+)};
