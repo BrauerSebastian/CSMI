@@ -33,5 +33,5 @@ export const middleware = withAuth(
 );
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|!landing).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|landing).*)'],
 };
