@@ -26,20 +26,18 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) {
           return null;
         }
-
+      
         const user = await prismadb.user.findUnique({
           where: {
             email: credentials.email,
           },
         });
         if (!user) return null;
-
-        const passwordHashed = hash(credentials.password);
-
-        const isValid = verify(passwordHashed, user.password);
-
+      
+        const isValid = verify(credentials.password, user.password); // Utiliza verify() directamente
+      
         if (!isValid) return null;
-
+      
         return {
           id: user.id,
           name: user.name,
