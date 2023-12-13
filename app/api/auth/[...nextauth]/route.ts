@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
             groupId: user.grupoId,
           } as any;
         } catch (error) {
-          console.error('Error during password hashing or verification:', error);
+          console.error('error en el hasheo:', error);
           return null;
         }
       },
