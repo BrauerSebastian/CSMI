@@ -68,42 +68,41 @@ export const CrearInformeModal = () => {
     }
   }, [grupoId]);
 
-  // ... Resto del código sigue igual
 
 
-  const onSubmit: SubmitHandler<{
-    name: string;
-    descripcion: string;
-    fecha: Date;
-    grupoId?: string; // Hacer que grupoId sea opcional
-  }> = async (values) => {
-    try {
-      const { name, descripcion, fecha, grupoId } = values;
+    const onSubmit: SubmitHandler<{
+      name: string;
+      descripcion: string;
+      fecha: Date;
+      grupoId?: string; // Hacer que grupoId sea opcional
+    }> = async (values) => {
+      try {
+        const { name, descripcion, fecha, grupoId } = values;
 
-      const dataToSend = {
-        name,
-        descripcion,
-        fecha,
-        grupoId: Array.isArray(grupoId) ? grupoId[0] : grupoId, // Asegurar que sea un string
-      };
+        const dataToSend = {
+          name,
+          descripcion,
+          fecha,
+          grupoId: Array.isArray(grupoId) ? grupoId[0] : grupoId, // Asegurar que sea un string
+        };
 
-      await axios.post(`/api/informes`, dataToSend);
+        await axios.post(`/api/informes`, dataToSend);
 
+        form.reset();
+        router.refresh();
+        toast.success('Informe creada correctamente');
+        onClose();
+      } catch (error) {
+        toast.error('Algo ha ido mal.');
+        console.log(error);
+      }
+    };
+
+
+    const handleClose = () => {
       form.reset();
-      router.refresh();
-      toast.success('Informe creada correctamente');
       onClose();
-    } catch (error) {
-      toast.error('Algo ha ido mal.');
-      console.log(error);
-    }
-  };
-
-
-  const handleClose = () => {
-    form.reset();
-    onClose();
-  };
+    };
 
 return (
   <Dialog open={isModalOpen} onOpenChange={handleClose}>

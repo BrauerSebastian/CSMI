@@ -1,6 +1,7 @@
 import prismadb from '@/lib/prismadb';
 import NextAuth, { type NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { useCallback } from 'react';
 export const runtime = 'nodejs';
 const { hash, verify } = require('credentials');
 
@@ -23,31 +24,38 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) {
+        try {
+          if (!credentials?.email || !credentials.password) {
+            return null;
+          }
+      
+          const user = await prismadb.user.findUnique({
+            where: {
+              email: credentials.email,
+            },
+          });
+          if (!user) return null;
+      
+          const passwordHashed = hash(credentials.password);
+      
+          const isValid = verify(passwordHashed, user.password);
+          console.log('isValid:', isValid);
+      
+          if (!isValid) return null;
+      
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.userRole,
+            groupId: user.grupoId,
+          } as any;
+        } catch (error) {
+          console.error('Error during password hashing or verification:', error);
           return null;
         }
-
-        const user = await prismadb.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-        if (!user) return null;
-
-        const passwordHashed = hash(credentials.password);
-
-        const isValid = verify(passwordHashed, user.password);
-
-        if (!isValid) return null;
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.userRole,
-          groupId: user.grupoId,
-        } as any;
       },
+      
     }),
   ],
   callbacks: {
@@ -66,7 +74,7 @@ export const authOptions: NextAuthOptions = {
     },
     session: ({ session, token }) => {
       return {
-        ...session,
+        ...session, 
         user: {
           ...session.user,
           id: token.id,
