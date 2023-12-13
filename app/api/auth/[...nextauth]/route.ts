@@ -1,8 +1,9 @@
 import prismadb from '@/lib/prismadb';
-import NextAuth, { type NextAuthOptions } from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { hash as generateHash, verify as verifyHash } from 'credentials';
+
 export const runtime = 'nodejs';
-const { hash, verify } = require('credentials');
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -33,9 +34,13 @@ export const authOptions: NextAuthOptions = {
           },
         });
         if (!user) return null;
-      
-        const isValid = verify(credentials.password, user.password); // Utiliza verify() directamente
-      
+
+        // Generar un hash de la contraseña ingresada
+        const hashedPassword = generateHash(credentials.password);
+
+        // Verificar si el hash generado coincide con el hash almacenado
+        const isValid = verifyHash(hashedPassword, user.password);
+
         if (!isValid) return null;
       
         return {
@@ -48,6 +53,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+
 
   callbacks: {
     jwt: async ({ token, user }) => {
