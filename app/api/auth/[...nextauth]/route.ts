@@ -1,8 +1,7 @@
 import prismadb from '@/lib/prismadb';
-import NextAuth, { type NextAuthOptions } from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-export const runtime = 'nodejs';
-const { hash, verify } = require('credentials');
+import { compare } from 'bcrypt'; // Importamos la función de comparación de bcrypt
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -21,7 +20,6 @@ export const authOptions: NextAuthOptions = {
           type: 'password',
         },
       },
-
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) {
           return null;
@@ -32,13 +30,13 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
           },
         });
+
         if (!user) return null;
 
-        const passwordHashed = hash(credentials.password);
+        // Utilizamos bcrypt para comparar las contraseñas de manera segura
+        const isValidPassword = await compare(credentials.password, user.password);
 
-        const isValid = verify(passwordHashed, user.password);
-
-        if (!isValid) return null;
+        if (!isValidPassword) return null;
 
         return {
           id: user.id,
